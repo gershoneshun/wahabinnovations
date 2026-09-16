@@ -18,6 +18,15 @@
 
   /* Founder mark stays a symbol, never an emoji */
   .fs-mark { font-variant-emoji: text; }
+
+   @media (max-width: 768px) {
+    #band .band-bg img,
+    #band .band-fore {
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+
 </style>
 
 </head>
@@ -81,7 +90,13 @@
         <p class="lead rv d1">WAHAB INNOVATIONS started with a simple idea. A young man should be able to dress sharp without looking like everyone else.</p>
         <p class="rv d2">Every piece is designed in-house and cut with intent, made to move between the studio, the street, and the moments that matter. What began as a personal obsession with fit and finish grew into a label with a point of view.</p>
         <div class="founder-sign rv d3">
-          <span class="fs-mark">&#x2733;&#xFE0E;</span>
+          <span class="fs-mark" aria-hidden="true">
+  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none"
+       stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="display:block">
+    <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/>
+  </svg>
+</span>
+
           <div><div class="fs-name">WAHAB INNOVATIONS</div><div class="fs-role">Founder &amp; Creative Director</div></div>
         </div>
       </div>
