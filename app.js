@@ -2,33 +2,40 @@ const nav=document.getElementById('nav');
 addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>40));
 
 // cinematic band: zoom out to reveal the full photo as it scrolls through view
+// cinematic band: zoom out to reveal the full photo as it scrolls through view
 const band=document.getElementById('band'), bandImg=band.querySelector('.band-fore');
-const START=1.4, END=1;           // scale range: zoomed-in -> full picture
-bandImg.style.willChange='transform';      // give the image its own GPU layer
-bandImg.style.backfaceVisibility='hidden'; // smoother compositing on mobile
+const START=1.4, END=1;                     // scale range: zoomed-in -> full picture
+bandImg.style.willChange='transform';       // own GPU layer
+bandImg.style.backfaceVisibility='hidden';
 
-// Cache the viewport size. On mobile the address bar hiding/showing fires
-// height-only "resize" events during scroll — we ignore those so the scale
-// math stays stable and doesn't jump. We only re-measure on a real width
-// change (rotation / window resize).
 let vh=innerHeight, vw=innerWidth;
-function updateBand(){
+let current=START, target=START;
+
+function computeTarget(){
   const r=band.getBoundingClientRect();
-  // progress 0 when band's top enters the bottom of the viewport, grows as it scrolls up
-  // normalize the active travel (first ~45% of the pass) to 0..1
-  let p=(vh-r.top)/(vh+r.height)/0.45;
+  let p=(vh-r.top)/(vh+r.height)/0.45;      // normalize active travel to 0..1
   p=Math.max(0,Math.min(1,p));
-  // easeOutCubic: fast at first, then glides to a stop — no snap at the end
-  const e=1-Math.pow(1-p,3);
-  let s=START-e*(START-END);
-  bandImg.style.transform='scale('+s.toFixed(4)+')';
+  const e=1-Math.pow(1-p,3);                // easeOutCubic
+  target=START-e*(START-END);
 }
-let ticking=false;
-addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(()=>{updateBand();ticking=false;});ticking=true;}},{passive:true});
-addEventListener('resize',()=>{ if(innerWidth!==vw){ vw=innerWidth; vh=innerHeight; updateBand(); } },{passive:true});
-addEventListener('orientationchange',()=>{ vw=innerWidth; vh=innerHeight; updateBand(); });
-addEventListener('load',updateBand);
-updateBand();
+
+let running=false;
+function loop(){
+  computeTarget();
+  current+=(target-current)*0.14;           // damping — lower = smoother
+  const done=Math.abs(target-current)<0.0006;
+  if(done) current=target;
+  bandImg.style.transform='scale('+current.toFixed(4)+')';
+  if(done){ running=false; return; }
+  requestAnimationFrame(loop);
+}
+function kick(){ if(!running){ running=true; requestAnimationFrame(loop); } }
+
+addEventListener('scroll',kick,{passive:true});
+addEventListener('resize',()=>{ if(innerWidth!==vw){ vw=innerWidth; vh=innerHeight; } kick(); },{passive:true});
+addEventListener('orientationchange',()=>{ vw=innerWidth; vh=innerHeight; kick(); });
+addEventListener('load',()=>{ computeTarget(); current=target; bandImg.style.transform='scale('+current.toFixed(4)+')'; });
+computeTarget(); current=target; bandImg.style.transform='scale('+current.toFixed(4)+')';
 
 
 const gl=document.getElementById('gridLines');
