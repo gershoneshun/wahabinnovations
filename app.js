@@ -4,21 +4,31 @@ addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>40));
 // cinematic band: zoom out to reveal the full photo as it scrolls through view
 const band=document.getElementById('band'), bandImg=band.querySelector('.band-fore');
 const START=1.4, END=1;           // scale range: zoomed-in -> full picture
+bandImg.style.willChange='transform';      // give the image its own GPU layer
+bandImg.style.backfaceVisibility='hidden'; // smoother compositing on mobile
+
+// Cache the viewport size. On mobile the address bar hiding/showing fires
+// height-only "resize" events during scroll — we ignore those so the scale
+// math stays stable and doesn't jump. We only re-measure on a real width
+// change (rotation / window resize).
+let vh=innerHeight, vw=innerWidth;
 function updateBand(){
-  const r=band.getBoundingClientRect(), vh=innerHeight;
+  const r=band.getBoundingClientRect();
   // progress 0 when band's top enters the bottom of the viewport, grows as it scrolls up
   let p=(vh-r.top)/(vh+r.height);
   p=Math.max(0,Math.min(1,p));
   // reach the fully-revealed scale by ~45% travel, then hold
   let s=START-(p/0.45)*(START-END);
   if(s<END)s=END;
-  bandImg.style.transform='scale('+s+')';
+  bandImg.style.transform='scale('+s.toFixed(4)+')';
 }
 let ticking=false;
 addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(()=>{updateBand();ticking=false;});ticking=true;}},{passive:true});
-addEventListener('resize',updateBand);
+addEventListener('resize',()=>{ if(innerWidth!==vw){ vw=innerWidth; vh=innerHeight; updateBand(); } },{passive:true});
+addEventListener('orientationchange',()=>{ vw=innerWidth; vh=innerHeight; updateBand(); });
 addEventListener('load',updateBand);
 updateBand();
+
 
 const gl=document.getElementById('gridLines');
 window.addEventListener('load',()=>{[...gl.children].forEach((s,i)=>setTimeout(()=>s.classList.add('on'),200+i*90));});
