@@ -15,11 +15,12 @@ let vh=innerHeight, vw=innerWidth;
 function updateBand(){
   const r=band.getBoundingClientRect();
   // progress 0 when band's top enters the bottom of the viewport, grows as it scrolls up
-  let p=(vh-r.top)/(vh+r.height);
+  // normalize the active travel (first ~45% of the pass) to 0..1
+  let p=(vh-r.top)/(vh+r.height)/0.45;
   p=Math.max(0,Math.min(1,p));
-  // reach the fully-revealed scale by ~45% travel, then hold
-  let s=START-(p/0.45)*(START-END);
-  if(s<END)s=END;
+  // easeOutCubic: fast at first, then glides to a stop — no snap at the end
+  const e=1-Math.pow(1-p,3);
+  let s=START-e*(START-END);
   bandImg.style.transform='scale('+s.toFixed(4)+')';
 }
 let ticking=false;
