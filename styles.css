@@ -260,10 +260,4 @@ footer{padding:86px 0 96px}
 
 @media print{nav,.marquee,#book,.band{display:none}section{padding:30px 0}}
 
-@media (max-width: 768px) {
-  #band .band-bg img,
-  #band .band-fore {
-    transform: none !important;   /* overrides the JS scroll transform */
-    transition: none !important;
-  }
-}
+
